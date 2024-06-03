@@ -1,6 +1,7 @@
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.time.Month;
 import java.time.Year;
@@ -10,6 +11,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+
 import javax.swing.RowFilter;
 import javax.swing.table.TableRowSorter;
 import javax.swing.*;
@@ -17,7 +21,7 @@ import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 
 
-public class MainProgram extends MyFrame implements ActionListener, MouseListener, KeyListener{
+public class MainProgram extends MyFrame implements ActionListener, MouseListener, KeyListener, WindowListener{
 	
 	private JLabel lblSearch;
 	private JTextField txtSearch;
@@ -32,7 +36,8 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 	
 	private int current_year = Year.now().getValue();
 	
-	private Database db=new Database("Pet.txt");
+	private Database db=new Database("F:\\Eclipse\\ Pet Management System-OOP\\pet.txt");
+	
 	private JButton btnAdd, btnClear, btnUpdate, btnDelete, btnClose;
 	private JLabel lblID,lblName,lblType,lblGender,lblColor,lblBreed,lblPrice;
 	private JTextField txtID, txtName, txtColor, txtPrice;
@@ -54,6 +59,8 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 		add(panelButtons).setBounds(40,340,600,30);
 		add(panelPetSearch()).setBounds(320,20,300,30);
 		add(panelPetTable()).setBounds(320,50,550,290);
+		Database db=new Database("F:\\Eclipse\\ Pet Management System-OOP\\pet.txt");
+		db.displayRecords(model_pet);
 		txtID.setText(getRowCount());
 		btnAdd.addActionListener(this);
 		btnClear.addActionListener(this);
@@ -61,17 +68,22 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 		btnDelete.addActionListener(this);
 		btnClose.addActionListener(this);
 		tbl_Pet.addMouseListener(this);
+		
 		txtSearch.addKeyListener(this);
 		txtName.addKeyListener(this);
 		txtPrice.addKeyListener(this);
 		txtColor.addKeyListener(this);
-		resetComponents();
+		txtColor.addMouseListener(this);
+
+		addWindowListener(this);
 		setBackgroundColor(235, 210, 52, 100);
 		add(setBackgroundImage("F:\\Eclipse\\ Pet Management System-OOP\\IMAGES\\bgImage\\bg1.jpg"));
 		setMyFrame("Pet Registration Form", 900, 500,true,DISPOSE_ON_CLOSE,false);
-		//pack();
+	
 		setLocationRelativeTo(null);
 		
+		db.displayRecords(model_pet);
+		resetComponents();
 	}
 	
 	public void initializedComponents() {
@@ -133,20 +145,10 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 		cboGender.addItem("Male");
 		cboGender.addItem("Female");
 		
-		cboType.addItem("Dog");
-		cboType.addItem("Cat");
-		cboType.addItem("Bird");
-		cboType.addItem("Fish");
-		cboType.addItem("Snake");
-		cboType.addItem("Rat");
-		cboType.addItem("Eldritch");
-		
-		cboBreed.addItem("Persian");
-		cboBreed.addItem("Siamese");
-		cboBreed.addItem("Askal");
-		cboBreed.addItem("Siberian");
-		cboBreed.addItem("Bulldog");
-		cboBreed.addItem("Dog");
+		db = new Database("F:\\Eclipse\\ Pet Management System-OOP\\Type.txt");
+		db.fillToComboBox(cboType);
+		db = new Database("F:\\Eclipse\\ Pet Management System-OOP\\Pet.txt");
+		db.fillToComboBox(cboBreed);
 		
 		
 	}
@@ -266,6 +268,17 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 		btnDelete.setEnabled(true);
 		
 	}
+	
+	public void process() {
+		String records = "";
+		for(int r=0; r<model_pet.getRowCount();r++) {
+			for(int c=0;c<model_pet.getColumnCount();c++) {
+				records+=model_pet.getValueAt(r, c)+"#";
+			}
+			records +="\n";
+		}
+		db.storeToFile(records);
+	}
 	public static void main (String[] args) {
 		new MainProgram();
 	}
@@ -273,23 +286,28 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		int i = tbl_Pet.getSelectedRow();
-		//JOptionPane.showMessageDialog(null, "Row"+i+" is selected.");
-
-		txtID.setText(tbl_Pet.getValueAt(i, 0)+"'");
-		txtName.setText(tbl_Pet.getValueAt(i, 1)+"");
-		cboGender.setSelectedItem(tbl_Pet.getValueAt(i, 2)+"");
-		cboType.setSelectedItem(tbl_Pet.getValueAt(i, 3)+"");
-		cboBreed.setSelectedItem(tbl_Pet.getValueAt(i, 4)+""); 
-		txtColor.setText(tbl_Pet.getValueAt(i, 5)+"");
-		txtPrice.setText(tbl_Pet.getValueAt(i, 6)+""); 
-		cboMonth.setSelectedItem(tbl_Pet.getValueAt(i, 7)+"'"); 
-		cboDay.setSelectedItem(tbl_Pet.getValueAt(i, 8)+"'"); 
-		cboYear.setSelectedItem(tbl_Pet.getValueAt(i, 9)+"'"); 
-		txtAge.setText(tbl_Pet.getValueAt(i, 10)+"'");
-		
-		tableClick();
-		
+		if(e.getSource().equals(tbl_Pet)) {
+			int i = tbl_Pet.getSelectedRow();
+			//JOptionPane.showMessageDialog(null, "Row"+i+" is selected.");
+	
+			txtID.setText(tbl_Pet.getValueAt(i, 0)+"'");
+			txtName.setText(tbl_Pet.getValueAt(i, 1)+"");
+			cboGender.setSelectedItem(tbl_Pet.getValueAt(i, 2)+"");
+			cboType.setSelectedItem(tbl_Pet.getValueAt(i, 3)+"");
+			cboBreed.setSelectedItem(tbl_Pet.getValueAt(i, 4)+""); 
+			txtColor.setText(tbl_Pet.getValueAt(i, 5)+"");
+			txtPrice.setText(tbl_Pet.getValueAt(i, 6)+""); 
+			cboMonth.setSelectedItem(tbl_Pet.getValueAt(i, 7)+"'"); 
+			cboDay.setSelectedItem(tbl_Pet.getValueAt(i, 8)+"'"); 
+			cboYear.setSelectedItem(tbl_Pet.getValueAt(i, 9)+"'"); 
+			txtAge.setText(tbl_Pet.getValueAt(i, 10)+"'");
+			
+			tableClick();
+		}else if(e.getSource().equals(txtColor)) {
+			Color color = JColorChooser.showDialog(null, "Choose",Color.black);
+			txtColor.setBackground(color);
+			txtColor.setText("");
+		}
 	}
 	
 	@Override
@@ -302,8 +320,9 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 			
 			getData();
 			model_pet.addRow(rowData);
-			txtID.setText(getRowCount());
 			resetComponents();
+			txtID.setText(getRowCount());
+			
 			
 		}else if(e.getSource().equals(btnClear)) {
 			resetComponents();
@@ -314,20 +333,10 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 			getData();
 			for(int col=1;col<tbl_Pet.getColumnCount();col++) {
 				tbl_Pet.setValueAt(rowData.get(col),i,col);
-				resetComponents();
-				/**
-				tbl_Pet.setValueAt(txtName.getText(), i, 1);
-				tbl_Pet.setValueAt(cboGender.getSelectedItem(), i, 2);
-				tbl_Pet.setValueAt(cboType.getSelectedItem(), i, 3);
-				tbl_Pet.setValueAt(cboBreed.getSelectedItem(), i, 4);
-				tbl_Pet.setValueAt(txtColor.getText(), i, 5);
-				tbl_Pet.setValueAt(txtPrice.getText(), i, 6);
-				tbl_Pet. setValueAt(cboMonth.getSelectedItem(), i, 7);
-				tbl_Pet.setValueAt(cboDay.getSelectedItem(), i,8);
-				tbl_Pet.setValueAt(cboYear.getSelectedItem(), i, 9);
-				tbl_Pet.setValueAt(txtAge.getText(), i, 10);
-				 */
 			}
+				resetComponents();
+				
+			
 			
 			
 		}else if(e.getSource().equals(btnDelete)) {
@@ -336,14 +345,7 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 			resetComponents();
 			
 		}else if(e.getSource().equals(btnClose)) {
-			String records = "";
-			for(int r=0; r<model_pet.getRowCount();r++) {
-				for(int c=0;c<model_pet.getColumnCount();c++) {
-					records+=model_pet.getValueAt(r, c)+"#";
-				}
-				records +="\n";
-			}
-			db.storeToFile(records);
+			process();
 			System.exit(0);
 		}
 		
@@ -401,5 +403,47 @@ public class MainProgram extends MyFrame implements ActionListener, MouseListene
 			tbl_Pet.setRowSorter(tbl_sort);
 			tbl_sort.setRowFilter(RowFilter.regexFilter(search,0,1));
 		}
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		process();
+		System.exit(0);
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }

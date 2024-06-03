@@ -1,6 +1,9 @@
 import java.io.*;
 import java.util.*;
+
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 	
 	public class Database {
 		private File file=null;
@@ -43,5 +46,37 @@ import javax.swing.JOptionPane;
 					} catch (Exception e) {
 						errorMessage("Error 101: storeToFile\n"+e.getMessage());
 					}
+				
 				}//end of storeToFile
-			} //end of class
+			
+			public void displayRecords(DefaultTableModel model) {
+				try {
+					fRead=new FileReader(file);
+					scan=new Scanner(fRead);
+					String data[];
+					while(scan.hasNext()) {
+						data=scan.nextLine().split("#");
+						row=new Vector<String>();
+						for(int i =0;i<model.getColumnCount(); i++) {
+							row.add(data[i]);
+						}
+						model.addRow(row);
+					}
+				
+			} catch(Exception e) {
+				errorMessage("Error 102: displayRecords\n"+e.getMessage());
+			}
+		}
+				
+			public void fillToComboBox(JComboBox<String> combo) {
+				try {
+					fRead=new FileReader(file);
+					scan=new Scanner(fRead);
+					while(scan.hasNext()) {
+						combo.addItem(scan.nextLine());
+					}
+				} catch (Exception e) {
+					errorMessage("Error 103: fillToComboBox\n"+e.getMessage());
+				}
+			}
+		}//end of class
